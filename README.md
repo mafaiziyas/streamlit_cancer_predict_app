@@ -2,10 +2,9 @@
 
 An interactive, production-ready machine learning workspace designed to assist medical professionals in predicting breast mass malignancy. Powered by clinical cytology features, this application transitions complex high-dimensional statistical boundaries into an intuitive, real-time diagnostic dashboard.
 
-📊 **Data Source:** [UCI Machine Learning Repository: Breast Cancer Wisconsin (Diagnostic)](https://archive.ics.uci.edu/dataset/17/breast+cancer+wisconsin+diagnostic) | '
-    '🌐 **Live Application:** [Streamlit Cloud App](https://cancer-predict-app-poweredby-logregression.streamlit.app/) | '
-    '💻 **Repository:** [GitHub Source](https://github.com/mafaiziyas/streamlit_cancer_predict_app.git)'
-
+📊 **Data Source:** [UCI Machine Learning Repository: Breast Cancer Wisconsin (Diagnostic)](https://archive.ics.uci.edu/dataset/17/breast+cancer+wisconsin+diagnostic) 
+🌐 **Live Application:** [Streamlit Cloud App](https://cancer-predict-app-poweredby-logregression.streamlit.app/)  
+💻 **Repository:** [GitHub Source](https://github.com/mafaiziyas/streamlit_cancer_predict_app.git)
 
 ---
 
