@@ -2,7 +2,7 @@
 
 An interactive, production-ready machine learning workspace designed to assist medical professionals in predicting breast mass malignancy. Powered by clinical cytology features, this application transitions complex high-dimensional statistical boundaries into an intuitive, real-time diagnostic dashboard.
 
-📊 **Data Source:** [UCI Machine Learning Repository: Breast Cancer Wisconsin (Diagnostic)](https://archive.ics.uci.edu/dataset/17/breast+cancer+wisconsin+diagnostic) 
+📊 **Data Source:** [UCI Machine Learning Repository: Breast Cancer Wisconsin (Diagnostic)](https://archive.ics.uci.edu/dataset/17/breast+cancer+wisconsin+diagnostic)  
 🌐 **Live Application:** [Streamlit Cloud App](https://cancer-predict-app-poweredby-logregression.streamlit.app/)  
 💻 **Repository:** [GitHub Source](https://github.com/mafaiziyas/streamlit_cancer_predict_app.git)
 
@@ -29,8 +29,6 @@ An interactive, production-ready machine learning workspace designed to assist m
 
 The application is built on the historic public **Wisconsin Diagnostic Breast Cancer (WDBC)** dataset (Donor: Nick Street, 1995), comprising 569 instances with 30 real-valued cell nuclei features.
 
-<br>
-
 Exploratory Data Analysis (EDA) confirms that features like `concave_points_worst` and `radius_mean` exhibit stark, highly separable distinct distributions between benign and malignant classes. This distinct spatial separation allows linear classifiers to map high-accuracy decision boundaries.
 
 ---
@@ -45,15 +43,11 @@ While both models show exceptional diagnostic capabilities, **clinical risk eval
 * **Testing Accuracy:** 98.2%  
 * **Class 1 (Malignant) Recall:** **1.00**
 
-<br>
-
 ### Support Vector Machine (SVM)
 * **Training Accuracy:** 99.6%  
 * **Validation Accuracy:** 96.5%  
 * **Testing Accuracy:** 98.2%  
 * **Class 1 (Malignant) Recall:** **0.95**
-
-<br>
 
 ### 🩺 The Critical Medical Pivot: Why Logistic Regression Wins
 In clinical oncology diagnostics, **a False Negative is a critical failure.** A missing diagnosis means life-threatening delays in patient treatment. 
@@ -67,5 +61,3 @@ In clinical oncology diagnostics, **a False Negative is a critical failure.** A 
 
 * **Automated REST API Pipeline:** Transition the backend out of manual sidebar sliders and into an automated API endpoint capable of ingestion directly from cytology laboratory imaging software.
 * **Dynamic Decision Threshold Optimization:** Implement adjustable classification thresholds. Lowering the cut-off boundary below the standard 0.5 mark will aggressively minimize false-negative tolerances for stricter medical environments.
-
----
