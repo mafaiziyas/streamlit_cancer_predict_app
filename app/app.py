@@ -5,7 +5,15 @@ import pandas as pd
 import plotly.graph_objects as go
 import os
 
-# DATA AND ARTIFACT ACCESS LAYER 
+# 1. APPLICATION VIEWCONFIG LAYOUT
+st.set_page_config(
+    page_title="Breast Cancer Diagnostic Suite",
+    page_icon="🔬",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# 2. CACHED SERIALIZED WEIGHTS ENGINE RECOVERY
 @st.cache_resource
 def load_analytical_pipeline():
     # Resolves paths relative to your precise repository models folder layout
@@ -18,17 +26,17 @@ scaler = pipeline["scaler"]
 model = pipeline["model"]
 feature_names = pipeline["feature_names"]
 
-# CONTROL INTERFACE (DYNAMIC SIDEBAR SLIDERS) 
+# 3. SIDEBAR CONTROLS GENERATION LAYER
 def add_sidebar():
     st.sidebar.header("🔬 Cell Nuclei Metrics")
     st.sidebar.markdown("Adjust parameters below to modify evaluation matrices manually.")
     
-    # We maintain a robust map of slider limits to prevent out-of-bound evaluation parameters
+    # Standard min, max, and baseline defaults from the data distribution limits
     slider_labels = [
-        ("Radius (mean)", "radius_mean", 0.0, 30.0, 14.0),
-        ("Texture (mean)", "texture_mean", 0.0, 40.0, 19.0),
+        ("Radius (mean)", "radius_mean", 0.0, 30.0, 14.1),
+        ("Texture (mean)", "texture_mean", 0.0, 40.0, 19.3),
         ("Perimeter (mean)", "perimeter_mean", 0.0, 200.0, 92.0),
-        ("Area (mean)", "area_mean", 0.0, 2500.0, 650.0),
+        ("Area (mean)", "area_mean", 0.0, 2500.0, 654.8),
         ("Smoothness (mean)", "smoothness_mean", 0.0, 0.2, 0.1),
         ("Compactness (mean)", "compactness_mean", 0.0, 0.4, 0.1),
         ("Concavity (mean)", "concavity_mean", 0.0, 0.5, 0.09),
@@ -38,17 +46,17 @@ def add_sidebar():
         ("Radius (se)", "radius_se", 0.0, 3.0, 0.4),
         ("Texture (se)", "texture_se", 0.0, 5.0, 1.2),
         ("Perimeter (se)", "perimeter_se", 0.0, 25.0, 2.9),
-        ("Area (se)", "area_se", 0.0, 600.0, 40.0),
+        ("Area (se)", "area_se", 0.0, 600.0, 40.3),
         ("Smoothness (se)", "smoothness_se", 0.0, 0.03, 0.007),
         ("Compactness (se)", "compactness_se", 0.0, 0.15, 0.025),
         ("Concavity (se)", "concavity_se", 0.0, 0.4, 0.03),
         ("Concave points (se)", "concave points_se", 0.0, 0.05, 0.01),
         ("Symmetry (se)", "symmetry_se", 0.0, 0.1, 0.02),
         ("Fractal dimension (se)", "fractal_dimension_se", 0.0, 0.03, 0.004),
-        ("Radius (worst)", "radius_worst", 0.0, 40.0, 16.0),
-        ("Texture (worst)", "texture_worst", 0.0, 50.0, 25.0),
-        ("Perimeter (worst)", "perimeter_worst", 0.0, 260.0, 107.0),
-        ("Area (worst)", "area_worst", 0.0, 4200.0, 880.0),
+        ("Radius (worst)", "radius_worst", 0.0, 40.0, 16.3),
+        ("Texture (worst)", "texture_worst", 0.0, 50.0, 25.7),
+        ("Perimeter (worst)", "perimeter_worst", 0.0, 260.0, 107.2),
+        ("Area (worst)", "area_worst", 0.0, 4200.0, 880.6),
         ("Smoothness (worst)", "smoothness_worst", 0.0, 0.3, 0.13),
         ("Compactness (worst)", "compactness_worst", 0.0, 1.1, 0.25),
         ("Concavity (worst)", "concavity_worst", 0.0, 1.3, 0.27),
@@ -63,38 +71,10 @@ def add_sidebar():
         
     return input_dict
 
-# MIN-MAX CUSTOM VECTOR LOCAL SCALE CALCULATOR 
-def get_scaled_values(input_dict):
-    # Dynamically scales values on a 0-1 baseline for visual standardization on the chart
+# 4. CHANNELS SCALER MATRIX FOR RADAR VISUAL BALANCE
+def get_visual_scaled_values(input_dict):
+    # Scales values manually between 0 and 1 using structural ranges for chart presentation symmetry
     scaled_dict = {}
-    for key, value in input_dict.items():
-        # Using analytical safe ranges to establish clean scaling metrics
-        scaled_dict[key] = value / (150.0 if "area" in key else 25.0 if "perimeter" in key else 1.0)
-    return scaled_dict
-
-# --- 4. DATA VISUALIZATION LAYER (POLAR RADAR CHART) ---
-def get_radar_chart(input_data):
-    scaled_data = get_scaled_values(input_data)
-    
-    categories = ['Radius', 'Texture', 'Perimeter', 'Area', 'Smoothness', 
-                  'Compactness', 'Concavity', 'Concave Points', 'Symmetry', 'Fractal Dim.']
-    
-    fig = go.Figure()
-
-    # Emerald Green Theme for Core Means
-    fig.add_trace(go.Scatterpolar(
-        r=[scaled_data['radius_mean'], scaled_data['texture_mean'], scaled_data['perimeter_mean'],
-           scaled_data['area_mean'], scaled_data['smoothness_mean'], scaled_data['compactness_mean'],
-           scaled_data['concavity_mean'], scaled_data['concave points_mean'], scaled_data['symmetry_mean'],
-           scaled_data['fractal_dimension_mean']],
-        theta=categories,
-        fill='toself',
-        fillcolor='rgba(46, 204, 113, 0.2)',
-        line=dict(color='#2ecc71', width=2),
-        name='Mean Attribute Value'
-    ))
-    
-    # Soft Sky Blue Theme for Error Spreads
-    fig.add_trace(go.Scatterpolar(
-        r=[scaled_data['radius_se'], scaled_data['texture_se'], scaled_data['perimeter_se'],
-           scaled_data['area_se'], scaled_data
+    # Approximate maximums used as hard divisors for uniform radar scaling
+    max_ranges = {
+        "radius": 40.0, "texture": 50.0, "perimeter": 260.0, "area
