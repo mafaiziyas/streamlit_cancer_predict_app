@@ -1,22 +1,14 @@
-%%writefile app/app.py
 import streamlit as st
 import pickle
-import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+import numpy as np
 import os
 
-# 1. APPLICATION VIEWCONFIG LAYOUT
-st.set_page_config(
-    page_title="Breast Cancer Diagnostic Suite",
-    page_icon="🔬",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-# 2. CACHED SERIALIZED WEIGHTS ENGINE RECOVERY
+# 1. CACHED PIPELINE RECOVERY LAYER
 @st.cache_resource
 def load_analytical_pipeline():
+    # Resolves paths relative to your precise repository layout
     model_path = os.path.join(os.path.dirname(__file__), "../models/scaler_and_model.pkl")
     with open(model_path, "rb") as f:
         return pickle.load(f)
@@ -26,143 +18,173 @@ scaler = pipeline["scaler"]
 model = pipeline["model"]
 feature_names = pipeline["feature_names"]
 
-# 3. SIDEBAR CONTROLS GENERATION LAYER
+
+# 2. DATA INGESTION AND CLEANING LAYER
+@st.cache_data
+def get_clean_data():
+    # Since wdbc.data doesn't have a header row, we construct it dynamically
+    # using 'id', 'diagnosis', followed by your exact 30 trained feature names.
+    column_names = ['id', 'diagnosis'] + list(feature_names)
+    
+    data = pd.read_csv("data/wdbc.data", header=None, names=column_names)
+    data = data.drop(['id'], axis=1)
+    data['diagnosis'] = data['diagnosis'].map({'M': 1, 'B': 0})
+    return data
+
+
+# 3. INTERACTIVE CONTROL SIDEBAR
 def add_sidebar():
-    st.sidebar.header("🔬 Cell Nuclei Metrics")
-    st.sidebar.markdown("Adjust parameters below to modify evaluation matrices manually.")
+    st.sidebar.header("🔬 Cell Nuclei Measurements")
+    st.sidebar.markdown("Adjust parameters manually to update evaluation matrices.")
     
-    slider_labels = [
-        ("Radius (mean)", "radius_mean", 0.0, 30.0, 14.1),
-        ("Texture (mean)", "texture_mean", 0.0, 40.0, 19.3),
-        ("Perimeter (mean)", "perimeter_mean", 0.0, 200.0, 92.0),
-        ("Area (mean)", "area_mean", 0.0, 2500.0, 654.8),
-        ("Smoothness (mean)", "smoothness_mean", 0.0, 0.2, 0.1),
-        ("Compactness (mean)", "compactness_mean", 0.0, 0.4, 0.1),
-        ("Concavity (mean)", "concavity_mean", 0.0, 0.5, 0.09),
-        ("Concave points (mean)", "concave points_mean", 0.0, 0.2, 0.05),
-        ("Symmetry (mean)", "symmetry_mean", 0.0, 0.4, 0.18),
-        ("Fractal dimension (mean)", "fractal_dimension_mean", 0.0, 0.1, 0.06),
-        ("Radius (se)", "radius_se", 0.0, 3.0, 0.4),
-        ("Texture (se)", "texture_se", 0.0, 5.0, 1.2),
-        ("Perimeter (se)", "perimeter_se", 0.0, 25.0, 2.9),
-        ("Area (se)", "area_se", 0.0, 600.0, 40.3),
-        ("Smoothness (se)", "smoothness_se", 0.0, 0.03, 0.007),
-        ("Compactness (se)", "compactness_se", 0.0, 0.15, 0.025),
-        ("Concavity (se)", "concavity_se", 0.0, 0.4, 0.03),
-        ("Concave points (se)", "concave points_se", 0.0, 0.05, 0.01),
-        ("Symmetry (se)", "symmetry_se", 0.0, 0.1, 0.02),
-        ("Fractal dimension (se)", "fractal_dimension_se", 0.0, 0.03, 0.004),
-        ("Radius (worst)", "radius_worst", 0.0, 40.0, 16.3),
-        ("Texture (worst)", "texture_worst", 0.0, 50.0, 25.7),
-        ("Perimeter (worst)", "perimeter_worst", 0.0, 260.0, 107.2),
-        ("Area (worst)", "area_worst", 0.0, 4200.0, 880.6),
-        ("Smoothness (worst)", "smoothness_worst", 0.0, 0.3, 0.13),
-        ("Compactness (worst)", "compactness_worst", 0.0, 1.1, 0.25),
-        ("Concavity (worst)", "concavity_worst", 0.0, 1.3, 0.27),
-        ("Concave points (worst)", "concave points_worst", 0.0, 0.3, 0.11),
-        ("Symmetry (worst)", "symmetry_worst", 0.0, 0.7, 0.29),
-        ("Fractal dimension (worst)", "fractal_dimension_worst", 0.0, 0.2, 0.08)
-    ]
-    
+    data = get_clean_data()
     input_dict = {}
-    for label, key, min_v, max_v, default_v in slider_labels:
-        input_dict[key] = st.sidebar.slider(label, min_value=min_v, max_value=max_v, value=default_v)
+
+    # Dynamically generate sliders matching your exact feature array configuration
+    for key in feature_names:
+        # Create user-friendly labels by replacing underscores with clean spaces
+        clean_label = key.replace("_", " ").title()
+        
+        input_dict[key] = st.sidebar.slider(
+            clean_label,
+            min_value=float(data[key].min()),
+            max_value=float(data[key].max()),
+            value=float(data[key].mean())
+        )
         
     return input_dict
 
-# 4. CHANNELS SCALER MATRIX FOR RADAR VISUAL BALANCE
-def get_visual_scaled_values(input_dict):
-    scaled_dict = {}
-    max_ranges = {
-        "radius": 40.0, "texture": 50.0, "perimeter": 260.0, "area": 4200.0,
-        "smoothness": 0.3, "compactness": 1.1, "concavity": 1.3, "concave points": 0.3,
-        "symmetry": 0.7, "fractal_dimension": 0.2
-    }
+
+# 4. MIN-MAX SCALER FOR THE RADAR VISUALIZATION ONLY
+def get_scaled_values(input_dict):
+    data = get_clean_data()
+    X = data.drop(['diagnosis'], axis=1)
     
+    scaled_dict = {}
     for key, value in input_dict.items():
-        base_metric = next((m for m in max_ranges if m in key.replace("_", " ")), None)
-        if base_metric:
-            scaled_dict[key] = value / max_ranges[base_metric]
-        else:
-            scaled_dict[key] = value
-            
+        max_val = X[key].max()
+        min_val = X[key].min()
+        # Prevent division by zero if limits collapse
+        scaled_dict[key] = (value - min_val) / (max_val - min_val) if (max_val - min_val) != 0 else 0.0
+        
     return scaled_dict
 
-# 5. RADAR PROFILE GENERATION
+
+# 5. HIGH-DIMENSIONAL RADAR SPECTRUM PLOT
 def get_radar_chart(input_data):
-    scaled = get_visual_scaled_values(input_data)
-    categories = ['Radius', 'Texture', 'Perimeter', 'Area', 'Smoothness', 
-                  'Compactness', 'Concavity', 'Concave Points', 'Symmetry', 'Fractal Dim.']
+    input_data = get_scaled_values(input_data)
     
+    # Unified categorical groupings for the 10 core dimensions
+    categories = ['Radius', 'Texture', 'Perimeter', 'Area', 'Smoothness', 
+                  'Compactness', 'Concavity', 'Concave Points', 'Symmetry', 'Fractal Dimension']
+
     fig = go.Figure()
 
+    # Trace 1: Mean Attributes (Translucent Royal Blue)
     fig.add_trace(go.Scatterpolar(
-        r=[scaled['radius_mean'], scaled['texture_mean'], scaled['perimeter_mean'], scaled['area_mean'], 
-           scaled['smoothness_mean'], scaled['compactness_mean'], scaled['concavity_mean'], 
-           scaled['concave points_mean'], scaled['symmetry_mean'], scaled['fractal_dimension_mean']],
-        theta=categories, fill='toself', fillcolor='rgba(41, 128, 185, 0.2)',
-        line=dict(color='#2980b9', width=2), name='Mean Attributes'
+        r=[input_data['radius_mean'], input_data['texture_mean'], input_data['perimeter_mean'],
+           input_data['area_mean'], input_data['smoothness_mean'], input_data['compactness_mean'],
+           input_data['concavity_mean'], input_data['concave points_mean'], input_data['symmetry_mean'],
+           input_data['fractal_dimension_mean']],
+        theta=categories,
+        fill='toself',
+        fillcolor='rgba(41, 128, 185, 0.2)',
+        line=dict(color='#2980b9', width=2),
+        name='Mean Value'
     ))
     
+    # Trace 2: Standard Errors (Translucent Emerald Green)
     fig.add_trace(go.Scatterpolar(
-        r=[scaled['radius_se'], scaled['texture_se'], scaled['perimeter_se'], scaled['area_se'], 
-           scaled['smoothness_se'], scaled['compactness_se'], scaled['concavity_se'], 
-           scaled['concave points_se'], scaled['symmetry_se'], scaled['fractal_dimension_se']],
-        theta=categories, fill='toself', fillcolor='rgba(26, 188, 156, 0.2)',
-        line=dict(color='#1abc9c', width=2), name='Standard Error'
+        r=[input_data['radius_se'], input_data['texture_se'], input_data['perimeter_se'], input_data['area_se'],
+           input_data['smoothness_se'], input_data['compactness_se'], input_data['concavity_se'],
+           input_data['concave points_se'], input_data['symmetry_se'], input_data['fractal_dimension_se']],
+        theta=categories,
+        fill='toself',
+        fillcolor='rgba(46, 204, 113, 0.2)',
+        line=dict(color='#2ecc71', width=2),
+        name='Standard Error'
     ))
     
+    # Trace 3: Worst Case Boundary (Translucent Coral Red)
     fig.add_trace(go.Scatterpolar(
-        r=[scaled['radius_worst'], scaled['texture_worst'], scaled['perimeter_worst'], scaled['area_worst'], 
-           scaled['smoothness_worst'], scaled['compactness_worst'], scaled['concavity_worst'], 
-           scaled['concave points_worst'], scaled['symmetry_worst'], scaled['fractal_dimension_worst']],
-        theta=categories, fill='toself', fillcolor='rgba(231, 76, 60, 0.15)',
-        line=dict(color='#e74c3c', width=2), name='Worst Boundary Case'
+        r=[input_data['radius_worst'], input_data['texture_worst'], input_data['perimeter_worst'],
+           input_data['area_worst'], input_data['smoothness_worst'], input_data['compactness_worst'],
+           input_data['concavity_worst'], input_data['concave points_worst'], input_data['symmetry_worst'],
+           input_data['fractal_dimension_worst']],
+        theta=categories,
+        fill='toself',
+        fillcolor='rgba(231, 76, 60, 0.15)',
+        line=dict(color='#e74c3c', width=2),
+        name='Worst Value'
     ))
 
     fig.update_layout(
         polar=dict(
-            radialaxis=dict(visible=True, range=[0, 1], gridcolor="rgba(180, 180, 180, 0.3)"),
-            angularaxis=dict(gridcolor="rgba(180, 180, 180, 0.3)")
+            radialaxis=dict(visible=True, range=[0, 1])
         ),
-        showlegend=True
+        showlegend=True,
+        margin=dict(l=20, r=20, t=20, b=20)
     )
+    
     return fig
 
-# 6. INFERENCE EVALUATION METRIC DISPLAY PANEL
-def display_predictions(input_data):
+
+# 6. INFERENCE PRODUCTION DIAGNOSTICS DISPLAY PANEL
+def add_predictions(input_data):
+    # Ensure features match the exact order expected by your pipeline's training matrix
     ordered_values = [input_data[name] for name in feature_names]
+    
     input_array = np.array(ordered_values).reshape(1, -1)
-    input_scaled = scaler.transform(input_array)
+    input_array_scaled = scaler.transform(input_array)
     
-    prediction = model.predict(input_scaled)[0]
-    probabilities = model.predict_proba(input_scaled)[0]
+    prediction = model.predict(input_array_scaled)[0]
+    probabilities = model.predict_proba(input_array_scaled)[0]
     
-    st.subheader("🩺 Diagnostic Classification Analysis")
+    st.subheader("🩺 Cell Cluster Prediction")
+    st.write("The current mathematical assessment flags this cluster as:")
     
     if prediction == 0:
-        st.success("Verdict Status: BENIGN")
+        st.success("Verdict: BENIGN")
     else:
-        st.error("Verdict Status: MALIGNANT")
+        st.error("Verdict: MALIGNANT")
         
     st.markdown("---")
-    st.write(f"**Benign Probability Index:** {probabilities[0] * 100:.2f}%")
+    st.write(f"**Probability of being Benign:** {probabilities[0] * 100:.2f}%")
     st.progress(float(probabilities[0]))
-    st.write(f"**Malignant Probability Index:** {probabilities[1] * 100:.2f}%")
+    
+    st.write(f"**Probability of being Malignant:** {probabilities[1] * 100:.2f}%")
     st.progress(float(probabilities[1]))
+    
+    st.caption("ℹ️ *This system acts as a pipeline helper tool and shouldn't replace certified diagnostic guidance.*")
 
-# 7. MAIN ORCHESTRATION PIPELINE
+
+# 7. MAIN INTERFACE ORCHESTRATOR
 def main():
-    st.title("🔬 Breast Cancer Diagnostic Assistant")
-    st.markdown("---")
+    st.set_page_config(
+        page_title="Breast Cancer Predictor",
+        page_icon="🔬",
+        layout="wide",
+        initial_sidebar_state="expanded"
+    )
+    
+    # Capture dynamic slider values
     input_data = add_sidebar()
     
+    with st.container():
+        st.title("🔬 Breast Cancer Diagnostic Assistant")
+        st.write("This workspace runs diagnostic inferences predicting whether a sample tissue mass is benign or malignant. Update metrics manually using the sliders on the left control dock.")
+        st.markdown("---")
+        
     col1, col2 = st.columns([3, 2])
+    
     with col1:
-        st.subheader("📊 Cell Profiling Radar Spectrum Matrix")
-        st.plotly_chart(get_radar_chart(input_data), use_container_width=True)
+        st.subheader("📊 Cell Feature Profile Matrix")
+        radar_chart = get_radar_chart(input_data)
+        st.plotly_chart(radar_chart, use_container_width=True)
+        
     with col2:
-        display_predictions(input_data)
+        add_predictions(input_data)
+
 
 if __name__ == '__main__':
     main()
