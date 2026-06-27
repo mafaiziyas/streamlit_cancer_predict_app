@@ -41,7 +41,7 @@ While both models show exceptional diagnostic capabilities, **clinical risk eval
 * **Training Accuracy:** 98.6%  
 * **Validation Accuracy:** 94.7%  
 * **Testing Accuracy:** 98.2%  
-* **Class 1 (Malignant) Recall:** **1.00**
+* **Class 1 (Malignant) Recall:** **0.99**
 
 ### Support Vector Machine (SVM)
 * **Training Accuracy:** 99.6%  
