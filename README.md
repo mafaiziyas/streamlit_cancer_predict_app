@@ -4,9 +4,8 @@ An interactive, production-ready machine learning workspace designed to assist m
 
 📊 **Data Source:** [UCI Machine Learning Repository: Breast Cancer Wisconsin (Diagnostic)](https://archive.ics.uci.edu/dataset/17/breast+cancer+wisconsin+diagnostic)  
 🌐 **Live Application:** [Streamlit Cloud App](https://cancer-predict-app-poweredby-logregression.streamlit.app/)  
-💻 **Repository:** [GitHub Source](https://github.com/mafaiziyas/streamlit_cancer_predict_app.git)
+💻 **Repository:** [GitHub Source](https://github.com/mafaiziyas/streamlit_cancer_predict_app.git/)  
 ℹ️ **Video Explanation:** [Introduction to the App Video](https://www.linkedin.com/posts/mafaiz-iyas_machinelearning-datascience-streamlit-ugcPost-7476755190277140480-k10B/?utm_source=share&utm_medium=member_desktop&rcm=ACoAAF9Wa6EBrCvLJduA-shw5pwZe65tChgqy5I)
----
 
 ## 🛠️ Tech Stack
 
