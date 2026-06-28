@@ -5,7 +5,7 @@ An interactive, production-ready machine learning workspace designed to assist m
 📊 **Data Source:** [UCI Machine Learning Repository: Breast Cancer Wisconsin (Diagnostic)](https://archive.ics.uci.edu/dataset/17/breast+cancer+wisconsin+diagnostic)  
 🌐 **Live Application:** [Streamlit Cloud App](https://cancer-predict-app-poweredby-logregression.streamlit.app/)  
 💻 **Repository:** [GitHub Source](https://github.com/mafaiziyas/streamlit_cancer_predict_app.git)
-
+ℹ️ **Video Explanation:** [Introduction to the App Video](https://www.linkedin.com/posts/mafaiz-iyas_machinelearning-datascience-streamlit-ugcPost-7476755190277140480-k10B/?utm_source=share&utm_medium=member_desktop&rcm=ACoAAF9Wa6EBrCvLJduA-shw5pwZe65tChgqy5I)
 ---
 
 ## 🛠️ Tech Stack
@@ -52,7 +52,7 @@ While both models show exceptional diagnostic capabilities, **clinical risk eval
 ### 🩺 The Critical Medical Pivot: Why Logistic Regression Wins
 In clinical oncology diagnostics, **a False Negative is a critical failure.** A missing diagnosis means life-threatening delays in patient treatment. 
 
-* Although the SVM yielded a marginally higher training/validation profile, **Logistic Regression achieved a perfect 1.00 Recall for Malignant cases (Class 1)** on the test partition.
+* Although the SVM yielded a marginally higher training/validation profile, **Logistic Regression achieved an almost perfect ~1.00 Recall for Malignant cases (Class 1)** on the test partition.
 * By prioritizing safety over raw aggregate accuracy, Logistic Regression is chosen to ensure no malignant tumor goes unnoticed.
 
 ---
